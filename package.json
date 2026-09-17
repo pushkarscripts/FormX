@@ -1,0 +1,22 @@
+{
+  "name": "formx",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server",
+    "automata"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"blue,green\" \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:client": "npm run dev -w client",
+    "dev:server": "npm run dev -w server",
+    "build:client": "npm run build -w client",
+    "test": "npm run test -w automata",
+    "test:automata": "npm run test -w automata"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
