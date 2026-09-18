@@ -4,7 +4,7 @@ FormX is a simple form creation and response collection platform whose primary a
 
 The platform enables form creators to define custom validation rules on form input fields backed by a custom, standalone automata engine that translates regular expressions into Finite State Machines (NFA & DFA) without relying on JavaScript's built-in `RegExp` engine.
 
-> **Status:** Tag 1 of 8 — Initial project structure, development environment, and monorepo scaffolding.
+> **Status:** Tag 2 of 8 — Automata Core, Part 1 (Regex Tokenizer, Parser, Thompson's Construction ε-NFA, and ε-Closure).
 
 ---
 
@@ -12,7 +12,7 @@ The platform enables form creators to define custom validation rules on form inp
 
 - **Frontend (`client/`):** React 18, JavaScript, Vite, Tailwind CSS, React Router
 - **Backend (`server/`):** Node.js, Express, JavaScript, CORS, dotenv (Mongoose ready for future tags)
-- **Automata Engine (`automata/`):** Standalone pure JavaScript package
+- **Automata Engine (`automata/`):** Standalone pure JavaScript package (zero external runtime dependencies)
 - **Testing:** Vitest test runner
 - **Monorepo:** npm workspaces
 
@@ -49,10 +49,95 @@ FormX/
 └── automata/                # Standalone Automata & Formal Languages Engine
     ├── package.json         # Automata package definition and test script
     ├── src/
-    │   └── index.js         # Engine entrypoint and metadata
+    │   ├── errors.js        # AutomataError and RegexSyntaxError
+    │   ├── tokenizer.js     # Regex Tokenizer and CharacterClass parser
+    │   ├── parser.js        # Syntax validation, implicit concat, Shunting-Yard postfix, and AST
+    │   ├── nfa.js           # State, Transition, NFA classes, and EPSILON constant
+    │   ├── thompson.js      # Thompson's construction (literal, class, concat, union, star)
+    │   ├── epsilon-closure.js # ε-closure computation with cycle prevention
+    │   └── index.js         # Public API exports
     └── tests/
-        └── index.test.js    # Vitest suite verifying the engine test setup
+        ├── index.test.js    # Package initialization test
+        ├── tokenizer.test.js # Tokenizer, character classes, escapes, and syntax error tests
+        ├── parser.test.js   # Precedence, implicit concat, postfix, AST, and validation tests
+        ├── nfa.test.js      # NFA, State, Transition, and alphabet extraction tests
+        ├── thompson.test.js # Thompson construction structure and simulation tests
+        └── epsilon-closure.test.js # ε-closure, multi-state sets, and cycle safety tests
 ```
+
+---
+
+## Automata Engine (Tag 2: Core, Part 1)
+
+The `automata` package is a standalone, zero-dependency theoretical engine implementing formal language algorithms from scratch.
+
+### 1. Supported Regex Syntax
+
+| Syntax | Description | Example |
+| :--- | :--- | :--- |
+| **Literal** | Alphanumeric characters and permitted symbols | `a`, `b`, `1`, `_` |
+| **Concatenation** | Implicit sequence of expressions | `ab`, `a(bc)`, `[a-z]0` |
+| **Union** | Alternation between two branches | `a\|b`, `0\|1` |
+| **Kleene Star** | Zero or more repetitions of preceding atom | `a*`, `(ab)*` |
+| **Grouping** | Parentheses for overriding precedence | `(a\|b)*c` |
+| **Character Class** | Set of characters or ranges | `[abc]`, `[a-z]`, `[0-9]`, `[a-zA-Z0-9_]` |
+| **Escapes** | Backslash escape to treat metacharacters as literals | `\*`, `\|`, `\(`, `\)`, `\[`, `\]`, `\\` |
+
+#### Operator Precedence Order
+1. **Parentheses / Grouping:** `(...)` (highest)
+2. **Kleene Star:** `*` (unary postfix)
+3. **Concatenation:** implicit (left-associative)
+4. **Union:** `|` (lowest, left-associative)
+
+### 2. Processing Pipeline
+
+```text
+Regex Pattern String
+       │
+       ▼
+1. Tokenize (tokenizer.js)
+   - Scans literals, escapes, character classes [a-z], and operators
+   - Rejects unsupported operators and malformed syntax with character position indicators
+       │
+       ▼
+2. Parse & Validate (parser.js)
+   - Validates balanced parentheses, non-empty groups, and operator placement
+   - Inserts explicit concatenation tokens (·)
+   - Converts infix tokens to postfix notation using Dijkstra's Shunting-Yard algorithm
+   - Constructs AST nodes (LiteralNode, CharClassNode, ConcatNode, UnionNode, StarNode)
+       │
+       ▼
+3. Thompson's Construction (thompson.js)
+   - Evaluates postfix tokens using an NFA fragment stack
+   - Generates exact textbook ε-NFA fragments:
+     * Literal symbol: s0 ──(char)──> s1 (accept)
+     * Character class: s0 ──(c_i)──> s1 for each c_i ∈ class
+     * Concatenation: A.accept ──(ε)──> B.start
+     * Union: newStart ──(ε)──> {A.start, B.start}, {A.accept, B.accept} ──(ε)──> newAccept
+     * Kleene star: loop and bypass ε-transitions
+       │
+       ▼
+4. ε-Closure (epsilon-closure.js)
+   - Computes all states reachable via zero or more ε-transitions
+   - Cycle-safe traversal prevents infinite loops
+```
+
+### 3. ε-Transition Representation
+
+Epsilon transitions are standardized across the entire engine as `null`:
+
+```javascript
+export const EPSILON = null;
+```
+
+A transition is an epsilon transition if and only if `transition.symbol === null` (or `transition.isEpsilon() === true`).
+
+### 4. Important Limitations (Milestone Boundaries)
+
+- **Strictly No Native RegExp:** JavaScript's built-in `RegExp` engine is not used for validation.
+- **Unsupported Operators:** `+` (one-or-more), `?` (optional), `{n,m}` (bounded repetitions), `^`/`$` (anchors), and `.` (wildcard) are rejected with clear syntax errors unless explicitly escaped.
+- **No Negated Character Classes:** `[^...]` is rejected.
+- **DFA Subset Construction & DFA Simulation:** Slated for Tag 3.
 
 ---
 
@@ -75,7 +160,7 @@ npm install
 
 ### 2. Configure Environment
 
-Copy the server environment template (optional for Tag 1 as defaults are used):
+Copy the server environment template:
 
 ```bash
 cp server/.env.example server/.env
@@ -83,7 +168,7 @@ cp server/.env.example server/.env
 
 ### 3. Run Development Servers
 
-You can run both client and server concurrently from the root:
+Run both client and server concurrently from the root:
 
 ```bash
 npm run dev
@@ -123,7 +208,7 @@ Expected JSON response:
 
 ### 5. Run Automata Tests
 
-Run the test suite for the standalone automata package:
+Run all unit tests across the automata engine:
 
 ```bash
 npm test
@@ -141,9 +226,9 @@ npm run test:watch -w automata
 
 ## Development Milestones Roadmap
 
-1. **Tag 1 (Current):** Project Scaffolding & Development Environment
-2. **Tag 2:** Automata Engine Core (Regex Parser, Thompson's Construction NFA)
-3. **Tag 3:** Automata Engine Completion (Epsilon-Closure, Subset Construction DFA, String Simulation)
+1. **Tag 1:** Project Scaffolding & Development Environment *(Complete)*
+2. **Tag 2 (Current):** Automata Engine Core, Part 1 — Regex Tokenizer, Parser, Thompson's Construction ε-NFA & ε-Closure *(Complete)*
+3. **Tag 3:** Automata Engine Core, Part 2 — Subset Construction (NFA -> DFA), DFA Minimization & String Simulation
 4. **Tag 4:** Backend Models & Authentication (JWT, bcrypt, MongoDB)
 5. **Tag 5:** Form Creation & Custom Regex Validation Configuration
 6. **Tag 6:** Public Form Links & Response Collection
