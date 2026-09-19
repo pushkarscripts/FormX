@@ -4,7 +4,7 @@ FormX is a simple form creation and response collection platform whose primary a
 
 The platform enables form creators to define custom validation rules on form input fields backed by a custom, standalone automata engine that translates regular expressions into Finite State Machines (NFA & DFA) without relying on JavaScript's built-in `RegExp` engine.
 
-> **Status:** Tag 2 of 8 — Automata Core, Part 1 (Regex Tokenizer, Parser, Thompson's Construction ε-NFA, and ε-Closure).
+> **Status:** Tag 3 of 8 — DFA Subset Construction and Simulation (ε-NFA to DFA conversion, powerset construction, and deterministic string simulation).
 
 ---
 
@@ -55,6 +55,7 @@ FormX/
     │   ├── nfa.js           # State, Transition, NFA classes, and EPSILON constant
     │   ├── thompson.js      # Thompson's construction (literal, class, concat, union, star)
     │   ├── epsilon-closure.js # ε-closure computation with cycle prevention
+    │   ├── dfa.js           # DFAState, DFA, subset construction, and DFA simulation
     │   └── index.js         # Public API exports
     └── tests/
         ├── index.test.js    # Package initialization test
@@ -62,12 +63,14 @@ FormX/
         ├── parser.test.js   # Precedence, implicit concat, postfix, AST, and validation tests
         ├── nfa.test.js      # NFA, State, Transition, and alphabet extraction tests
         ├── thompson.test.js # Thompson construction structure and simulation tests
-        └── epsilon-closure.test.js # ε-closure, multi-state sets, and cycle safety tests
+        ├── epsilon-closure.test.js # ε-closure, multi-state sets, and cycle safety tests
+        ├── subset-construction.test.js # Subset construction structural properties and determinism
+        └── dfa-simulation.test.js # DFA simulation, edge cases, and NFA vs DFA equivalence tests
 ```
 
 ---
 
-## Automata Engine (Tag 2: Core, Part 1)
+## Automata Engine
 
 The `automata` package is a standalone, zero-dependency theoretical engine implementing formal language algorithms from scratch.
 
@@ -88,6 +91,8 @@ The `automata` package is a standalone, zero-dependency theoretical engine imple
 2. **Kleene Star:** `*` (unary postfix)
 3. **Concatenation:** implicit (left-associative)
 4. **Union:** `|` (lowest, left-associative)
+
+---
 
 ### 2. Processing Pipeline
 
@@ -120,24 +125,88 @@ Regex Pattern String
 4. ε-Closure (epsilon-closure.js)
    - Computes all states reachable via zero or more ε-transitions
    - Cycle-safe traversal prevents infinite loops
+       │
+       ▼
+5. Subset Construction (dfa.js)
+   - Converts ε-NFA into an equivalent DFA via powerset construction
+   - Maps each DFA state to a unique subset of NFA states
+   - Computes deterministic transition table over input alphabet Σ
+       │
+       ▼
+6. DFA Simulation (dfa.js)
+   - Validates candidate input strings in O(n) time by following DFA transitions
+   - Rejects missing transitions or out-of-alphabet symbols; accepts on final accept state
 ```
 
-### 3. ε-Transition Representation
+---
 
-Epsilon transitions are standardized across the entire engine as `null`:
+### 3. Subset Construction Algorithm
+
+The subset construction algorithm (powerset construction) translates an $\epsilon$-NFA into an equivalent Deterministic Finite Automaton (DFA) where each DFA state corresponds to a subset of NFA states:
+
+1. **Initial State:** The DFA start state $D_0$ is defined as the $\epsilon$-closure of the NFA start state:
+   $$D_0 = \epsilon\text{-closure}(s_0)$$
+2. **Alphabet Derivation:** The input alphabet $\Sigma$ is derived by collecting all non-$\epsilon$ transition symbols present in the NFA.
+3. **Reachable State Discovery:** A worklist queue explores reachable state subsets:
+   For each discovered DFA state subset $T$ and each input symbol $a \in \Sigma$:
+   $$\text{move}(T, a) = \bigcup_{s \in T} \{ s' \mid s \xrightarrow{a} s' \}$$
+   $$U = \epsilon\text{-closure}(\text{move}(T, a))$$
+   If $U \neq \emptyset$:
+   - If $U$ has not been seen before, assign it a new DFA state and add it to the worklist.
+   - Add deterministic transition $T \xrightarrow{a} U$.
+4. **Accepting State Marking:** A DFA state is marked as accepting if and only if its subset contains at least one NFA state that is an accepting state:
+   $$\text{isAccept}(D) \iff \exists s \in D \text{ such that } s \in F_{\text{NFA}}$$
+5. **State Identification & Collision Safety:** Subsets are uniquely keyed using canonically sorted state IDs (`getStateSetKey`). Sorting ensures identity is independent of JavaScript `Set` insertion or iteration order.
+6. **Missing Transition Handling:** When $\text{move}(T, a) = \emptyset$, no transition is added to the DFA state's transition table (partial transition function). This avoids generating redundant, unreachable trap/sink states. During simulation, any missing transition immediately rejects the input.
+
+---
+
+### 4. API Usage: Constructing and Simulating DFAs
+
+#### Example: Construct a DFA from a Regex and Validate Strings
 
 ```javascript
-export const EPSILON = null;
+import { subsetConstruction, simulateDFA, thompson } from '@formx/automata';
+
+// 1. Construct DFA directly from a regex pattern string
+const dfa = subsetConstruction('(ab)*c');
+
+// 2. Validate candidate strings against the DFA
+console.log(simulateDFA(dfa, 'c'));      // true
+console.log(simulateDFA(dfa, 'abc'));    // true
+console.log(simulateDFA(dfa, 'ababc'));  // true
+console.log(simulateDFA(dfa, 'ab'));     // false (missing 'c')
+console.log(simulateDFA(dfa, 'x'));      // false (unknown symbol)
+
+// Alternatively, use convenience methods on the DFA instance:
+console.log(dfa.accepts('abc'));         // true
+console.log(dfa.simulate('abc'));        // true
 ```
 
-A transition is an epsilon transition if and only if `transition.symbol === null` (or `transition.isEpsilon() === true`).
+#### Example: Inspecting DFA States and Subsets
 
-### 4. Important Limitations (Milestone Boundaries)
+```javascript
+import { subsetConstruction } from '@formx/automata';
+
+const dfa = subsetConstruction('a|b');
+
+console.log(`DFA State Count: ${dfa.states.size}`);
+console.log(`Input Alphabet: ${Array.from(dfa.alphabet).join(', ')}`);
+
+for (const state of dfa.states) {
+  const nfaIds = Array.from(state.nfaStates).map(s => s.id).join(', ');
+  console.log(`State ${state.name}: NFA subset {${nfaIds}}, isAccept=${state.isAccept}`);
+}
+```
+
+---
+
+### 5. Important Limitations (Milestone Boundaries)
 
 - **Strictly No Native RegExp:** JavaScript's built-in `RegExp` engine is not used for validation.
 - **Unsupported Operators:** `+` (one-or-more), `?` (optional), `{n,m}` (bounded repetitions), `^`/`$` (anchors), and `.` (wildcard) are rejected with clear syntax errors unless explicitly escaped.
 - **No Negated Character Classes:** `[^...]` is rejected.
-- **DFA Subset Construction & DFA Simulation:** Slated for Tag 3.
+- **DFA Minimization:** Hopcroft's DFA minimization algorithm is deferred to future optimization milestones; the current DFA is exact and minimal in reachable states.
 
 ---
 
@@ -227,8 +296,8 @@ npm run test:watch -w automata
 ## Development Milestones Roadmap
 
 1. **Tag 1:** Project Scaffolding & Development Environment *(Complete)*
-2. **Tag 2 (Current):** Automata Engine Core, Part 1 — Regex Tokenizer, Parser, Thompson's Construction ε-NFA & ε-Closure *(Complete)*
-3. **Tag 3:** Automata Engine Core, Part 2 — Subset Construction (NFA -> DFA), DFA Minimization & String Simulation
+2. **Tag 2:** Automata Engine Core, Part 1 — Regex Tokenizer, Parser, Thompson's Construction ε-NFA & ε-Closure *(Complete)*
+3. **Tag 3 (Current):** Automata Engine Core, Part 2 — Subset Construction (ε-NFA -> DFA) & DFA String Simulation *(Complete)*
 4. **Tag 4:** Backend Models & Authentication (JWT, bcrypt, MongoDB)
 5. **Tag 5:** Form Creation & Custom Regex Validation Configuration
 6. **Tag 6:** Public Form Links & Response Collection

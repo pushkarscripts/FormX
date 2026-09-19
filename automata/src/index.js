@@ -8,6 +8,10 @@
  * - Infix to Postfix converter (Shunting-Yard)
  * - Thompson's Construction (Regex / Postfix -> ε-NFA)
  * - ε-Closure computation with cycle safety
+ * Tag 3:
+ * - Deterministic Finite Automaton (DFA) representation
+ * - Subset construction algorithm (ε-NFA -> DFA)
+ * - DFA string simulation
  *
  * Standalone and independent of Express, React, MongoDB, or native RegExp.
  */
@@ -62,6 +66,15 @@ export {
   StateIdGenerator,
 } from './thompson.js';
 
+// DFA & Subset Construction & Simulation
+export {
+  DFAState,
+  DFA,
+  getStateSetKey,
+  subsetConstruction,
+  simulateDFA,
+} from './dfa.js';
+
 /**
  * Returns package metadata for status and health verification.
  */
@@ -70,6 +83,6 @@ export function getEngineInfo() {
     name: 'FormX Automata Engine',
     version: '0.1.0',
     status: 'initialized',
-    description: 'Standalone formal language and automata validation engine (Thompson ε-NFA)'
+    description: 'Standalone formal language and automata validation engine (Thompson ε-NFA & DFA)'
   };
 }
