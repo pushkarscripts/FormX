@@ -11,7 +11,7 @@ The platform enables form creators to define custom validation rules on form inp
 ## Tech Stack
 
 - **Frontend (`client/`):** React 18, JavaScript, Vite, Tailwind CSS, React Router
-- **Backend (`server/`):** Node.js, Express, JavaScript, CORS, dotenv (Mongoose ready for future tags)
+- **Backend (`server/`):** Node.js, Express, JavaScript, CORS, dotenv, Mongoose, JWT, bcryptjs
 - **Automata Engine (`automata/`):** Standalone pure JavaScript package (zero external runtime dependencies)
 - **Testing:** Vitest test runner
 - **Monorepo:** npm workspaces
@@ -235,6 +235,32 @@ Copy the server environment template:
 cp server/.env.example server/.env
 ```
 
+Set `MONGODB_URI` to the MongoDB database used by the server and replace
+`JWT_SECRET` with a long, random secret. The server exits with a clear error if
+either required setting is missing. Do not commit `server/.env`.
+
+### Backend API
+
+All successful authentication responses include an access token. Send it on
+protected requests as `Authorization: Bearer <token>`.
+
+| Method | Endpoint | Purpose |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register an admin with an email and password |
+| `POST` | `/api/auth/login` | Log in and receive a JWT |
+| `GET` | `/api/health` | Check API health |
+| `POST` | `/api/forms` | Create an owned form |
+| `GET` | `/api/forms` | List the current admin's forms |
+| `GET` | `/api/forms/:id` | Retrieve an owned form |
+| `PATCH` | `/api/forms/:id` | Update an owned form |
+| `PUT` | `/api/forms/:id` | Update an owned form |
+| `DELETE` | `/api/forms/:id` | Delete an owned form |
+
+Forms support `Short Text`, `Long Text`, `Number`, `Multiple Choice`,
+`Checkbox`, and `Email` questions. Multiple Choice and Checkbox questions
+require a non-empty `options` array; optional `regex` values are supported for
+text question types and are stored for the automata validation milestone.
+
 ### 3. Run Development Servers
 
 Run both client and server concurrently from the root:
@@ -275,15 +301,18 @@ Expected JSON response:
 }
 ```
 
-### 5. Run Automata Tests
+### 5. Run Tests
 
 Run all unit tests across the automata engine:
 
 ```bash
 npm test
-# or
-npm run test:automata
 ```
+
+The root command runs both the automata and backend suites. To run only the
+backend suite, use `npm run test:server` (or `npm run test -w server`).
+Backend tests use `mongodb-memory-server`, so they do not require a local
+MongoDB process.
 
 To run tests in watch mode:
 
