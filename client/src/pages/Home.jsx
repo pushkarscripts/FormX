@@ -34,7 +34,7 @@ export default function Home() {
           subset construction, and DFA simulation.
         </p>
         <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-          Tag 1: Initial Monorepo &amp; Dev Environment
+          Tag 5: Admin Frontend &amp; Form Builder
         </div>
       </div>
 
