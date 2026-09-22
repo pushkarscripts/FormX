@@ -4,7 +4,7 @@ FormX is a simple form creation and response collection platform whose primary a
 
 The platform enables form creators to define custom validation rules on form input fields backed by a custom, standalone automata engine that translates regular expressions into Finite State Machines (NFA & DFA) without relying on JavaScript's built-in `RegExp` engine.
 
-> **Status:** Tag 3 of 8 — DFA Subset Construction and Simulation (ε-NFA to DFA conversion, powerset construction, and deterministic string simulation).
+> **Status:** Tag 5 of 8 — Admin frontend and form builder.
 
 ---
 
@@ -36,7 +36,14 @@ FormX/
 │       ├── main.jsx         # React root with BrowserRouter
 │       ├── App.jsx          # App layout and route structure
 │       ├── index.css        # Tailwind directives and global styles
+│       ├── components/      # Shared route and form UI components
+│       ├── context/         # Client authentication state
+│       ├── lib/
+│       │   └── api.js       # Authenticated API request helper
 │       └── pages/
+│           ├── AuthPage.jsx
+│           ├── Dashboard.jsx
+│           ├── FormBuilder.jsx
 │           └── Home.jsx     # Overview page showing service status
 ├── server/                  # Backend Express REST API
 │   ├── .env.example         # Environment template
@@ -327,7 +334,7 @@ npm run test:watch -w automata
 1. **Tag 1:** Project Scaffolding & Development Environment *(Complete)*
 2. **Tag 2:** Automata Engine Core, Part 1 — Regex Tokenizer, Parser, Thompson's Construction ε-NFA & ε-Closure *(Complete)*
 3. **Tag 3 (Current):** Automata Engine Core, Part 2 — Subset Construction (ε-NFA -> DFA) & DFA String Simulation *(Complete)*
-4. **Tag 4:** Backend Models & Authentication (JWT, bcrypt, MongoDB)
+4. **Tag 4:** Backend Models & Authentication (JWT, bcrypt, MongoDB) *(Complete)*
 5. **Tag 5:** Form Creation & Custom Regex Validation Configuration
 6. **Tag 6:** Public Form Links & Response Collection
 7. **Tag 7:** Response Management, Dashboard & CSV Export
