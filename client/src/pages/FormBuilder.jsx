@@ -29,6 +29,7 @@ export default function FormBuilder() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!editing) return;
@@ -43,6 +44,12 @@ export default function FormBuilder() {
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function copyPublicLink() {
+    await navigator.clipboard.writeText(`${window.location.origin}/public/forms/${id}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   }
 
   function updateQuestion(index, field, value) {
@@ -112,6 +119,7 @@ export default function FormBuilder() {
           <h1 className="mt-2 text-3xl font-bold text-slate-900">{editing ? 'Edit form' : 'Create form'}</h1>
         </div>
         <button className="button-primary" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save form'}</button>
+        {editing && form.published && <button className="button-secondary" type="button" onClick={copyPublicLink}>{copied ? 'Copied' : 'Copy public link'}</button>}
       </div>
       <FieldError>{error}</FieldError>
       <section className="card space-y-4">

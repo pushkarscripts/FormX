@@ -262,11 +262,16 @@ protected requests as `Authorization: Bearer <token>`.
 | `PATCH` | `/api/forms/:id` | Update an owned form |
 | `PUT` | `/api/forms/:id` | Update an owned form |
 | `DELETE` | `/api/forms/:id` | Delete an owned form |
+| `GET` | `/api/public/forms/:id` | Fetch a published public form |
+| `POST` | `/api/public/forms/:id/responses` | Submit an unauthenticated response |
 
 Forms support `Short Text`, `Long Text`, `Number`, `Multiple Choice`,
 `Checkbox`, and `Email` questions. Multiple Choice and Checkbox questions
 require a non-empty `options` array; optional `regex` values are supported for
 text question types and are stored for the automata validation milestone.
+Public submissions validate required values, question types, configured choices,
+email structure, and Short Text/Long Text patterns through the standalone
+automata DFA engine. Request bodies are limited to 100 KB.
 
 ### 3. Run Development Servers
 
@@ -335,7 +340,7 @@ npm run test:watch -w automata
 2. **Tag 2:** Automata Engine Core, Part 1 — Regex Tokenizer, Parser, Thompson's Construction ε-NFA & ε-Closure *(Complete)*
 3. **Tag 3 (Current):** Automata Engine Core, Part 2 — Subset Construction (ε-NFA -> DFA) & DFA String Simulation *(Complete)*
 4. **Tag 4:** Backend Models & Authentication (JWT, bcrypt, MongoDB) *(Complete)*
-5. **Tag 5:** Form Creation & Custom Regex Validation Configuration
-6. **Tag 6:** Public Form Links & Response Collection
+5. **Tag 5:** Admin Frontend & Form Builder *(Complete)*
+6. **Tag 6:** Public Forms & Automata-Based Validation *(Complete)*
 7. **Tag 7:** Response Management, Dashboard & CSV Export
 8. **Tag 8:** Integration Polish, UI Refinements & Documentation

@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import FormBuilder from './pages/FormBuilder.jsx';
+import PublicForm from './pages/PublicForm.jsx';
 import Home from './pages/Home.jsx';
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />
+          <Route path="/public/forms/:id" element={<PublicForm />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forms/new" element={<FormBuilder />} />
