@@ -6,6 +6,8 @@ import AuthPage from './pages/AuthPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import FormBuilder from './pages/FormBuilder.jsx';
 import PublicForm from './pages/PublicForm.jsx';
+import Responses from './pages/Responses.jsx';
+import ResponseDetail from './pages/ResponseDetail.jsx';
 import Home from './pages/Home.jsx';
 
 export default function App() {
@@ -17,7 +19,7 @@ export default function App() {
           <div className="flex items-center space-x-3">
             <span className="text-2xl font-bold tracking-tight text-indigo-600">FormX</span>
             <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Tag 5 of 8
+              Tag 7 of 8
             </span>
           </div>
           <nav className="flex items-center space-x-4 text-sm font-medium text-slate-600">
@@ -44,6 +46,8 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forms/new" element={<FormBuilder />} />
             <Route path="/forms/:id/edit" element={<FormBuilder />} />
+            <Route path="/forms/:id/responses" element={<Responses />} />
+            <Route path="/forms/:id/responses/:responseId" element={<ResponseDetail />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

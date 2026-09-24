@@ -119,6 +119,7 @@ export default function FormBuilder() {
           <h1 className="mt-2 text-3xl font-bold text-slate-900">{editing ? 'Edit form' : 'Create form'}</h1>
         </div>
         <button className="button-primary" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save form'}</button>
+        {editing && <Link className="button-secondary" to={`/forms/${id}/responses`}>Responses</Link>}
         {editing && form.published && <button className="button-secondary" type="button" onClick={copyPublicLink}>{copied ? 'Copied' : 'Copy public link'}</button>}
       </div>
       <FieldError>{error}</FieldError>

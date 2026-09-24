@@ -4,7 +4,7 @@ FormX is a simple form creation and response collection platform whose primary a
 
 The platform enables form creators to define custom validation rules on form input fields backed by a custom, standalone automata engine that translates regular expressions into Finite State Machines (NFA & DFA) without relying on JavaScript's built-in `RegExp` engine.
 
-> **Status:** Tag 5 of 8 — Admin frontend and form builder.
+> **Status:** Tag 7 of 8 — Response management and CSV export.
 
 ---
 
@@ -264,6 +264,9 @@ protected requests as `Authorization: Bearer <token>`.
 | `DELETE` | `/api/forms/:id` | Delete an owned form |
 | `GET` | `/api/public/forms/:id` | Fetch a published public form |
 | `POST` | `/api/public/forms/:id/responses` | Submit an unauthenticated response |
+| `GET` | `/api/forms/:id/responses` | List responses for an owned form |
+| `GET` | `/api/forms/:id/responses/:responseId` | View one response |
+| `GET` | `/api/forms/:id/responses/export` | Export owned-form responses as CSV |
 
 Forms support `Short Text`, `Long Text`, `Number`, `Multiple Choice`,
 `Checkbox`, and `Email` questions. Multiple Choice and Checkbox questions
@@ -342,5 +345,5 @@ npm run test:watch -w automata
 4. **Tag 4:** Backend Models & Authentication (JWT, bcrypt, MongoDB) *(Complete)*
 5. **Tag 5:** Admin Frontend & Form Builder *(Complete)*
 6. **Tag 6:** Public Forms & Automata-Based Validation *(Complete)*
-7. **Tag 7:** Response Management, Dashboard & CSV Export
+7. **Tag 7:** Response Management, Dashboard & CSV Export *(Complete)*
 8. **Tag 8:** Integration Polish, UI Refinements & Documentation

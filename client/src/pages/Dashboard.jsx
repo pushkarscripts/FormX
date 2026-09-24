@@ -70,6 +70,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-5 flex gap-3 border-t border-slate-100 pt-4">
               <Link className="button-secondary" to={`/forms/${form._id}/edit`}>Edit</Link>
+              <Link className="button-secondary" to={`/forms/${form._id}/responses`}>Responses</Link>
               <button className="button-danger" type="button" onClick={() => removeForm(form._id)}>Delete</button>
             </div>
           </article>
