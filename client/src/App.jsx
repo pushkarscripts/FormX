@@ -19,7 +19,7 @@ export default function App() {
           <div className="flex items-center space-x-3">
             <span className="text-2xl font-bold tracking-tight text-indigo-600">FormX</span>
             <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Tag 7 of 8
+              Tag 8 of 8
             </span>
           </div>
           <nav className="flex items-center space-x-4 text-sm font-medium text-slate-600">

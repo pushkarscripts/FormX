@@ -33,7 +33,7 @@ const questionSchema = new mongoose.Schema(
       trim: true,
       validate: {
         validator(value) {
-          return value === undefined || ['Short Text', 'Long Text', 'Email'].includes(this.type);
+          return value === undefined || ['Short Text', 'Long Text'].includes(this.type);
         },
         message: 'Regex validation is only supported for text questions'
       }

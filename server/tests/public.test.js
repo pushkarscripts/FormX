@@ -52,6 +52,15 @@ function answerSet(overrides = {}) {
 }
 
 describe('public forms', () => {
+  it('rejects malformed JSON and does not require authentication', async () => {
+    const malformed = await request(app)
+      .post(`/api/public/forms/${form.id}/responses`)
+      .set('Content-Type', 'application/json')
+      .send('{"answers":');
+    expect(malformed.status).toBe(400);
+    expect((await request(app).get(`/api/public/forms/${form.id}`)).status).toBe(200);
+  });
+
   it('fetches a published form without exposing its owner', async () => {
     const response = await request(app).get(`/api/public/forms/${form.id}`);
     expect(response.status).toBe(200);
