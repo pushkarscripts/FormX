@@ -1,7 +1,8 @@
 import React from 'react';
-import { Routes, Route, Link, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext.jsx';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Navbar from './components/Navbar.jsx';
+import Footer from './components/Footer.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import FormBuilder from './pages/FormBuilder.jsx';
@@ -9,36 +10,18 @@ import PublicForm from './pages/PublicForm.jsx';
 import Responses from './pages/Responses.jsx';
 import ResponseDetail from './pages/ResponseDetail.jsx';
 import Home from './pages/Home.jsx';
+import Docs from './pages/Docs.jsx';
 
 export default function App() {
-  const { admin, logout } = useAuth();
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-      <header className="border-b border-slate-200 bg-white shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="text-2xl font-bold tracking-tight text-indigo-600">FormX</span>
-            <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Tag 8 of 8
-            </span>
-          </div>
-          <nav className="flex items-center space-x-4 text-sm font-medium text-slate-600">
-            <Link to="/" className="hover:text-indigo-600 transition-colors">Home</Link>
-            {admin ? (
-              <>
-                <Link to="/dashboard" className="hover:text-indigo-600 transition-colors">Dashboard</Link>
-                <button className="hover:text-indigo-600" type="button" onClick={logout}>Log out</button>
-              </>
-            ) : (
-              <Link to="/login" className="hover:text-indigo-600 transition-colors">Admin login</Link>
-            )}
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-[#f8f8f5] text-[#121212] font-sans antialiased selection:bg-[#00f0ff] selection:text-black">
+      <Navbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/help" element={<Navigate to="/docs" replace />} />
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />
           <Route path="/public/forms/:id" element={<PublicForm />} />
@@ -53,9 +36,7 @@ export default function App() {
         </Routes>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        FormX &bull; Formal Language &amp; Automata Theory Academic Project
-      </footer>
+      <Footer />
     </div>
   );
 }
